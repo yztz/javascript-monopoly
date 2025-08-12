@@ -1,0 +1,46 @@
+name: CI/CD Pipeline for Webpack Project
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project with Webpack
+        run: npm run build # 确保你的 package.json 中有 'build' 脚本来执行 Webpack
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: webpack-build-output
+          path: dist/ # 替换为你的 Webpack 输出目录，默认为 dist
+
+  download-and-use:
+    needs: build # 确保这个作业在 'build' 作业完成后才运行
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: webpack-build-output
+
+      - name: Verify downloaded files
+        run: |
+          ls -R
+          # 这里可以添加更多命令来验证和使用下载的打包文件
+          # 例如：部署到服务器，或者进行压缩等
